@@ -12,6 +12,7 @@ IHost host = Host.CreateDefaultBuilder(args)
         {
             builder
                 .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("Gateway"))
+                .SetErrorStatusOnException(true)
                 .AddSource(nameof(CtoDGatewayMessageHandler)) // when we manually create activities, we need to setup the sources here
                 .AddSource(nameof(DtoCGatewayMessageHandler)) // when we manually create activities, we need to setup the sources here
                 .AddZipkinExporter(options =>

@@ -20,6 +20,7 @@ builder.Services.AddOpenTelemetryTracing(builder =>
 {
     builder
         .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("WebApi"))
+        .SetErrorStatusOnException(true)
          .AddSource(nameof(MessageHandler)) // when we manually create activities, we need to setup the sources here
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()

@@ -12,6 +12,7 @@ IHost host = Host.CreateDefaultBuilder(args)
         {
             builder
                 .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("IOT"))
+                .SetErrorStatusOnException(true)
                 .AddSource(nameof(CtoDIotMessageHandler)) // when we manually create activities, we need to setup the sources here
                 .AddSource(nameof(DtoCIotMessageHandler)) // when we manually create activities, we need to setup the sources here
                 .AddZipkinExporter(options =>

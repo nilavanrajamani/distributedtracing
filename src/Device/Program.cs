@@ -12,6 +12,7 @@ IHost host = Host.CreateDefaultBuilder(args)
         {
             builder
                 .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("Device"))
+                .SetErrorStatusOnException(true)
                 .AddSource(nameof(DeviceMessageHandler)) // when we manually create activities, we need to setup the sources here
                 .AddZipkinExporter(options =>
                 {

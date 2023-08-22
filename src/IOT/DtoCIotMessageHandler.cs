@@ -2,6 +2,7 @@
 using EasyNetQ.Topology;
 using OpenTelemetry;
 using OpenTelemetry.Context.Propagation;
+using OpenTelemetry.Trace;
 using System.Diagnostics;
 using System.Text;
 
@@ -14,16 +15,18 @@ public class DtoCIotMessageHandler : BackgroundService
 
     private readonly IBus _bus;
     private readonly ILogger<DtoCIotMessageHandler> _logger;
+    private readonly IConfiguration _configuration;
     private readonly Lazy<Exchange> _exchangectod;
     public const string dtocIncomingQueueWorker = "worker.dtoc.devicetoiot";
     public const string dtocIncomingExchange = "exchange.dtoc.devicetoiot";
     public const string dtocIncomingRoutingkey = "message.dtoc.devicetoiot";
     public const string dtocOutgoingExchange = "exchange.dtoc.iottogateway";
     public const string dtocOutgoingRoutingKey = "message.dtoc.iottogateway";
-    public DtoCIotMessageHandler(IBus bus, ILogger<DtoCIotMessageHandler> logger)
+    public DtoCIotMessageHandler(IBus bus, ILogger<DtoCIotMessageHandler> logger, IConfiguration configuration)
     {
         _bus = bus;
         _logger = logger;
+        _configuration = configuration;
         _exchangectod = new Lazy<Exchange>(() => _bus.Advanced.ExchangeDeclare(dtocOutgoingExchange, ExchangeType.Topic));
     }
     public static TextMapPropagator Propagator1 => Propagator;
@@ -43,17 +46,33 @@ public class DtoCIotMessageHandler : BackgroundService
                 Baggage.Current = parentContext.Baggage;
 
                 // start an activity
-                using var activity = ActivitySource.StartActivity("message receive", ActivityKind.Consumer, parentContext.ActivityContext, tags: new[] { new KeyValuePair<string, object?>("server", Environment.MachineName) });
+                using (var activity = ActivitySource.StartActivity("message receive", ActivityKind.Consumer, parentContext.ActivityContext, tags: new[] { new KeyValuePair<string, object?>("server", Environment.MachineName) }))
+                {
+                    try
+                    {                       
+                        AddMessagingTags(activity, receivedInfo);
 
-                AddMessagingTags(activity, receivedInfo);
+                        if (_configuration.GetValue<bool>("SimulateException"))
+                        {
+                            throw new Exception("Device to cloud message interrupted");
+                        }                        
 
-                var helloMessage = System.Text.Json.JsonSerializer.Deserialize<ResponsePayload>(messageBytes.Span);
+                        var helloMessage = System.Text.Json.JsonSerializer.Deserialize<ResponsePayload>(messageBytes.Span);
 
-                _logger.LogInformation("Handling message: {message}", System.Text.Json.JsonSerializer.Deserialize<ResponsePayload>(messageBytes.Span));
+                        _logger.LogInformation("Handling message: {message}", System.Text.Json.JsonSerializer.Deserialize<ResponsePayload>(messageBytes.Span));
 
-                await Task.Delay(TimeSpan.FromSeconds(1));
+                        await Task.Delay(TimeSpan.FromSeconds(1));
 
-                await PublishAsync(helloMessage);
+                        await PublishAsync(helloMessage);
+                    }
+                    catch(Exception ex)
+                    {
+                        activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                        activity?.RecordException(ex);                        
+                    }
+                }
+
+
 
             });
 
