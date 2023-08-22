@@ -5,6 +5,8 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using WebApi;
 using Microsoft.AspNetCore.SignalR;
+using System.Diagnostics;
+using Microsoft.AspNetCore.Http;
 
 // not needed, W3C is now default
 // System.Diagnostics.Activity.DefaultIdFormat = System.Diagnostics.ActivityIdFormat.W3C;
@@ -67,7 +69,7 @@ app.MapGet("/send", async (string payload, MessagePublisher messagePublisher) =>
 {
     await messagePublisher.PublishAsync(new RequestPayload(payload));
     
-    return new ResponsePayload("Message Sent. Awaiting response from device.");
+    return new ResponsePayload($"Message Sent. Awaiting response from device. Trace id is {Activity.Current?.TraceId}");
 });
 //using (var scope = app.Services.CreateScope())
 //{
