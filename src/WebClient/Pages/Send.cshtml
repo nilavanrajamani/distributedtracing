@@ -1,0 +1,17 @@
+﻿@page
+@model SendModel
+@{
+    ViewData["Title"] = "Hello page";
+}
+
+<div>
+    @Model.Output.Message
+</div>
+<br />
+<div id="divload">
+    
+</div>
+
+
+<script src="~/js/signalr/dist/browser/signalr.js"></script>
+<script src="~/js/chat.js"></script>

@@ -5,17 +5,28 @@ using OpenTelemetry.Context.Propagation;
 using System.Diagnostics;
 using System.Text;
 
-namespace Worker;
+namespace Gateway;
 
-public class MessageHandler : BackgroundService
+public class DtoCGatewayMessageHandler : BackgroundService
 {
-    private static readonly ActivitySource ActivitySource = new ActivitySource(nameof(MessageHandler));
+    private static readonly ActivitySource ActivitySource = new ActivitySource(nameof(DtoCGatewayMessageHandler));
     private static readonly TextMapPropagator Propagator = new TraceContextPropagator();
 
     private readonly IBus _bus;
-    private readonly ILogger<MessageHandler> _logger;
-
-    public MessageHandler(IBus bus, ILogger<MessageHandler> logger) => (_bus, _logger) = (bus, logger);
+    private readonly ILogger<DtoCGatewayMessageHandler> _logger;
+    private readonly Lazy<Exchange> _exchangectod;
+    public const string dtocIncomingQueueWorker = "worker.dtoc.iottogateway";
+    public const string dtocIncomingExchange = "exchange.dtoc.iottogateway";
+    public const string dtocIncomingRoutingkey = "message.dtoc.iottogateway";
+    public const string dtocOutgoingExchange = "exchange.dtoc.gatewaytoapp";
+    public const string dtocOutgoingRoutingKey = "message.dtoc.gatewaytoapp";
+    public DtoCGatewayMessageHandler(IBus bus, ILogger<DtoCGatewayMessageHandler> logger)
+    {
+        _bus = bus;
+        _logger = logger;
+        _exchangectod = new Lazy<Exchange>(() => _bus.Advanced.ExchangeDeclare(dtocOutgoingExchange, ExchangeType.Topic));
+    }
+    public static TextMapPropagator Propagator1 => Propagator;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -26,7 +37,7 @@ public class MessageHandler : BackgroundService
             async (messageBytes, properties, receivedInfo) =>
             {
                 // Extract the PropagationContext of the upstream parent from the message headers
-                var parentContext = Propagator.Extract(default, properties, ExtractTraceContext);
+                var parentContext = Propagator1.Extract(default, properties, ExtractTraceContext);
 
                 // Inject extracted info into current context
                 Baggage.Current = parentContext.Baggage;
@@ -36,18 +47,23 @@ public class MessageHandler : BackgroundService
 
                 AddMessagingTags(activity, receivedInfo);
 
-                _logger.LogInformation("Handling message: {message}", System.Text.Json.JsonSerializer.Deserialize<HelloMessage>(messageBytes.Span));
+                var helloMessage = System.Text.Json.JsonSerializer.Deserialize<ResponsePayload>(messageBytes.Span);
 
-                await Task.Delay(TimeSpan.FromSeconds(5));
+                _logger.LogInformation("Handling message: {message}", System.Text.Json.JsonSerializer.Deserialize<ResponsePayload>(messageBytes.Span));
+
+                await Task.Delay(TimeSpan.FromSeconds(1));
+
+                await PublishAsync(helloMessage);
+
             });
 
         await UntilCancelled(stoppingToken);
 
         Queue GetQueue()
         {
-            var queue = _bus.Advanced.QueueDeclare("hello.worker");
-            var exchange = _bus.Advanced.ExchangeDeclare("hello.exchange", ExchangeType.Topic);
-            var binding = _bus.Advanced.Bind(exchange, queue, "hello.*");
+            var queue = _bus.Advanced.QueueDeclare(dtocIncomingQueueWorker);
+            var exchange = _bus.Advanced.ExchangeDeclare(dtocIncomingExchange, ExchangeType.Topic);
+            var binding = _bus.Advanced.Bind(exchange, queue, dtocIncomingRoutingkey);
             return queue;
         }
 
@@ -87,6 +103,29 @@ public class MessageHandler : BackgroundService
             var tcs = new TaskCompletionSource<bool>();
             using var ctRegistration = ct.Register(() => tcs.SetResult(true));
             await tcs.Task;
+        }
+    }
+
+    public async Task PublishAsync<T>(T message)
+    {
+        using var activity = ActivitySource.StartActivity("message send", ActivityKind.Producer);
+        var messageProperties = new MessageProperties();
+
+        ActivityContext contextToInject = activity?.Context ?? Activity.Current?.Context ?? default;
+
+        // Inject the ActivityContext into the message headers to propagate trace context to the receiving service.
+        Propagator.Inject(new PropagationContext(contextToInject, Baggage.Current), messageProperties, InjectTraceContext);
+
+        await _bus.Advanced.PublishAsync(_exchangectod.Value, dtocOutgoingRoutingKey, false, new Message<T>(message, messageProperties));
+
+        void InjectTraceContext(MessageProperties messageProperties, string key, string value)
+        {
+            if (messageProperties.Headers is null)
+            {
+                messageProperties.Headers = new Dictionary<string, object>();
+            }
+
+            messageProperties.Headers[key] = value;
         }
     }
 

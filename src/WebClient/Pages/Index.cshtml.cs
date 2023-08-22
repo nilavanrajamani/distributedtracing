@@ -17,7 +17,7 @@ namespace WebClient.Pages
         {
         }
 
-        public IActionResult OnPost() => RedirectToPage("hello", new { username = Input.Username });
+        public IActionResult OnPost() => RedirectToPage("send", new { payload = Input.Username });
 
 
         public class InputModel

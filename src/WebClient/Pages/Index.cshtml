@@ -9,5 +9,14 @@
         <label asp-for="Input.Username"></label>
         <input asp-for="Input.Username" class="form-control" />
         <span asp-validation-for="Input.Username" class="text-danger"></span>
+        <input type="submit" id="btnsubmit"></input>
     </div>
 </form>
+
+<div class="container">
+    <div class="row p-1">
+        <div class="col-6">
+            <ul id="messagesList"></ul>
+        </div>
+    </div>
+</div>

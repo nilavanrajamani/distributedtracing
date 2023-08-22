@@ -14,10 +14,14 @@ public class MessagePublisher : IDisposable
     private readonly IBus _bus;
     private readonly Lazy<Exchange> _exchange;
 
-    public MessagePublisher()
+    public const string ctodExchange = "exchange.ctod.apptogateway";
+    public const string ctodRoutingkey = "message.ctod.apptogateway";    
+
+
+    public MessagePublisher(IBus bus)
     {
-        _bus = RabbitHutch.CreateBus("host=localhost");
-        _exchange = new Lazy<Exchange>(() => _bus.Advanced.ExchangeDeclare("hello.exchange", ExchangeType.Topic));
+        _bus = bus;
+        _exchange = new Lazy<Exchange>(() => _bus.Advanced.ExchangeDeclare(ctodExchange, ExchangeType.Topic));
     }
 
     public void Dispose() => _bus.Dispose();
@@ -32,7 +36,7 @@ public class MessagePublisher : IDisposable
         // Inject the ActivityContext into the message headers to propagate trace context to the receiving service.
         Propagator.Inject(new PropagationContext(contextToInject, Baggage.Current), messageProperties, InjectTraceContext);
 
-        await _bus.Advanced.PublishAsync(_exchange.Value, "hello.message", false, new Message<T>(message, messageProperties));
+        await _bus.Advanced.PublishAsync(_exchange.Value, ctodRoutingkey, false, new Message<T>(message, messageProperties));
 
         void InjectTraceContext(MessageProperties messageProperties, string key, string value)
         {

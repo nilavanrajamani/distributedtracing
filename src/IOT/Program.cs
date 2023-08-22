@@ -1,7 +1,7 @@
 using EasyNetQ;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using Gateway;
+using IOT;
 
 IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices(services =>
@@ -11,9 +11,9 @@ IHost host = Host.CreateDefaultBuilder(args)
         services.AddOpenTelemetryTracing(builder =>
         {
             builder
-                .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("Gateway"))
-                .AddSource(nameof(CtoDGatewayMessageHandler)) // when we manually create activities, we need to setup the sources here
-                .AddSource(nameof(DtoCGatewayMessageHandler)) // when we manually create activities, we need to setup the sources here
+                .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("IOT"))
+                .AddSource(nameof(CtoDIotMessageHandler)) // when we manually create activities, we need to setup the sources here
+                .AddSource(nameof(DtoCIotMessageHandler)) // when we manually create activities, we need to setup the sources here
                 .AddZipkinExporter(options =>
                 {
                     // not needed, it's the default
@@ -30,12 +30,11 @@ IHost host = Host.CreateDefaultBuilder(args)
         // or we might start handing messages (or whatever our background service does) before tracing is up and running
         // (noticed this as when I stopped this service and sent messages to the queue, the first message handled
         // wouldn't show up in the traces)
-        services.AddHostedService<CtoDGatewayMessageHandler>();
-        services.AddHostedService<DtoCGatewayMessageHandler>();
+        services.AddHostedService<CtoDIotMessageHandler>();
+        services.AddHostedService<DtoCIotMessageHandler>();
     })
     .Build();
 
 await host.RunAsync();
-
 record RequestPayload(string message);
 record ResponsePayload(string message);
