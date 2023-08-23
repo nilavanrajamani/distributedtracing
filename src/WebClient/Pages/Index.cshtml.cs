@@ -23,6 +23,7 @@ namespace WebClient.Pages
         public class InputModel
         {
             [Required]
+            [Display(Name = "Enter message to be sent to device")]
             public string Username { get; set; }
 
         }
