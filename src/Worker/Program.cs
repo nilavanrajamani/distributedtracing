@@ -6,7 +6,7 @@ using Gateway;
 IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices(services =>
     {
-        services.AddSingleton<IBus>(_ => RabbitHutch.CreateBus("host=localhost"));
+        services.AddSingleton<IBus>(_ => RabbitHutch.CreateBus("host=localhost;timeout=120"));
         services.AddLogging(builder => builder.AddSeq());
         services.AddOpenTelemetryTracing(builder =>
         {

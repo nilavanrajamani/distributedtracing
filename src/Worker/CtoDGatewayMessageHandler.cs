@@ -53,8 +53,6 @@ public class CtoDGatewayMessageHandler : BackgroundService
 
                 _logger.LogInformation("Handling message: {message}", System.Text.Json.JsonSerializer.Deserialize<RequestPayload>(messageBytes.Span));
 
-                await Task.Delay(TimeSpan.FromSeconds(1));
-
                 await PublishAsync(helloMessage);
 
             });

@@ -2,11 +2,13 @@ using EasyNetQ;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Device;
+using MQTTnet.Client;
+using MQTTnet;
 
 IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices(services =>
     {
-        services.AddSingleton<IBus>(_ => RabbitHutch.CreateBus("host=localhost"));
+        services.AddSingleton<IMqttClient>(_ => (new MqttFactory()).CreateMqttClient());
         services.AddLogging(builder => builder.AddSeq());
         services.AddOpenTelemetryTracing(builder =>
         {
@@ -36,5 +38,5 @@ IHost host = Host.CreateDefaultBuilder(args)
 
 await host.RunAsync();
 
-record RequestPayload(string message);
-record ResponsePayload(string message);
+public record RequestPayload(string message);
+public record ResponsePayload(string message);

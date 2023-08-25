@@ -16,7 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSignalR();
 builder.Services.AddLogging(builder => builder.AddSeq());
 builder.Services.AddControllers();
-builder.Services.AddSingleton<IBus>(_ => RabbitHutch.CreateBus("host=localhost"));
+builder.Services.AddSingleton<IBus>(_ => RabbitHutch.CreateBus("host=localhost;timeout=120"));
 
 builder.Services.AddOpenTelemetryTracing(builder =>
 {

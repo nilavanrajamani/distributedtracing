@@ -31,3 +31,13 @@ services:
       - "5555:80" # ui
     environment:
         ACCEPT_EULA: "Y"
+  mqtt:
+    image: "eclipse-mosquitto:latest"
+    hostname: mosquitto
+    container_name: mosquitto
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
