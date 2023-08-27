@@ -4,19 +4,38 @@
     ViewData["Title"] = "Home page";
 }
 
-<form method="post">
-    <div class="form-group">
-        <label asp-for="Input.Username"></label>
-        <input asp-for="Input.Username" class="form-control" />
-        <span asp-validation-for="Input.Username" class="text-danger"></span>
-        <input type="submit" id="btnsubmit"></input>
-    </div>
-</form>
-
-<div class="container">
-    <div class="row p-1">
-        <div class="col-6">
-            <ul id="messagesList"></ul>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            &nbsp;
         </div>
     </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="form-group">
+                <label asp-for="Input.Username"></label>
+                <input type="text" id="txtInputText" class="form-control" /><br />
+                <input type="button" id="btnsubmit" value="Send to device" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6" style="background-color:lavender;"><h3>Cloud to device</h3></div>
+        <div class="col-sm-6" style="background-color:lavenderblush;"><h3>Device to cloud</h3></div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6" style="background-color:lavender;">&nbsp;</div>
+        <div class="col-sm-6" style="background-color:lavenderblush;">&nbsp;</div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6" id="divResponse" style="background-color:lavender;"></div>
+        <div class="col-sm-6" id="divload" style="background-color:lavenderblush;"></div>
+    </div>
 </div>
+
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script src="~/js/signalr/dist/browser/signalr.js"></script>
+<script src="~/js/chat.js"></script>

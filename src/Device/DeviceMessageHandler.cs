@@ -65,7 +65,7 @@ public class DeviceMessageHandler : IHostedService
 
         await Task.Delay(TimeSpan.FromSeconds(3));
 
-        var responsePayload = @$"Acknowledged message {helloMessage?.message} at {DateTime.UtcNow}. This is received from the device";
+        var responsePayload = @$"Acknowledged message <b>{helloMessage?.message}</b> at {DateTime.Now}. This is received from the device";
 
         await PublicMqttAsync(new ResponsePayload(responsePayload));
     }
