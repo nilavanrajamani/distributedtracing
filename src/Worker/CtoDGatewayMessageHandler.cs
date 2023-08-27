@@ -45,7 +45,7 @@ public class CtoDGatewayMessageHandler : BackgroundService
                 Baggage.Current = parentContext.Baggage;
 
                 // start an activity
-                using var activity = ActivitySource.StartActivity("Cloud to Device", ActivityKind.Consumer, parentContext.ActivityContext, tags: new[] { new KeyValuePair<string, object?>("server", Environment.MachineName) });
+                using var activity = ActivitySource.StartActivity("Cloud to Device Receive", ActivityKind.Consumer, parentContext.ActivityContext, tags: new[] { new KeyValuePair<string, object?>("server", Environment.MachineName) });
 
                 AddMessagingTags(activity, receivedInfo);
 
@@ -110,7 +110,7 @@ public class CtoDGatewayMessageHandler : BackgroundService
 
     public async Task PublishAsync<T>(T message)
     {
-        using var activity = ActivitySource.StartActivity("Cloud to Device", ActivityKind.Producer);
+        using var activity = ActivitySource.StartActivity("Cloud to Device Send", ActivityKind.Producer);
         var messageProperties = new MessageProperties();
 
         ActivityContext contextToInject = activity?.Context ?? Activity.Current?.Context ?? default;
