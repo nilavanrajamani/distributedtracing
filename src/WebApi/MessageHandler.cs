@@ -50,6 +50,8 @@ public class MessageHandler : BackgroundService
 
                 _logger.LogInformation("Handling message: {message}", System.Text.Json.JsonSerializer.Deserialize<RequestPayload>(messageBytes.Span));
 
+                await Task.Delay(TimeSpan.FromMilliseconds(20));
+
                 await _chatHub.SendMessage("sampleuser", helloMessage.message);
             });
 

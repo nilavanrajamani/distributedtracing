@@ -51,6 +51,8 @@ public class DtoCGatewayMessageHandler : BackgroundService
 
                 _logger.LogInformation("Handling message: {message}", System.Text.Json.JsonSerializer.Deserialize<ResponsePayload>(messageBytes.Span));
 
+                await Task.Delay(TimeSpan.FromMilliseconds(20));
+
                 await PublishAsync(helloMessage);
 
             });

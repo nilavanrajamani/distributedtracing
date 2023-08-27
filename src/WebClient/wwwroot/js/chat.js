@@ -2,6 +2,8 @@
 
 var connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:5003/chatHub").build();
 
+connection.serverTimeoutInMilliseconds = 100000; // 1 second
+
 connection.on("ReceiveMessage", function (user, message) {
     var preMessage = document.getElementById('divload').innerHTML;
     document.getElementById("divload").innerHTML = message + "<br/><br/>" + preMessage;

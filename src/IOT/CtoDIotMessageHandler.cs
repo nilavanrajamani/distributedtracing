@@ -103,6 +103,8 @@ public class CtoDIotMessageHandler : IHostedService
 
                 _logger.LogInformation("Handling message: {message}", System.Text.Json.JsonSerializer.Deserialize<RequestPayload>(messageBytes.Span));
 
+                await Task.Delay(TimeSpan.FromMilliseconds(20));
+
                 await PublicMqttAsync(helloMessage);
 
             });

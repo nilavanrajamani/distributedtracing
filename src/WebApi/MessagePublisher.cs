@@ -36,6 +36,8 @@ public class MessagePublisher : IDisposable
         // Inject the ActivityContext into the message headers to propagate trace context to the receiving service.
         Propagator.Inject(new PropagationContext(contextToInject, Baggage.Current), messageProperties, InjectTraceContext);
 
+        await Task.Delay(TimeSpan.FromMilliseconds(20));
+
         await _bus.Advanced.PublishAsync(_exchange.Value, ctodRoutingkey, false, new Message<T>(message, messageProperties));
 
         void InjectTraceContext(MessageProperties messageProperties, string key, string value)

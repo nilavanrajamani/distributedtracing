@@ -100,6 +100,8 @@ public class DtoCIotMessageHandler : IHostedService
 
                 _logger.LogInformation("Handling message: {message}", helloMessage);
 
+                await Task.Delay(TimeSpan.FromMilliseconds(20));
+
                 await PublishAsync(helloMessage);
             }
             catch (Exception ex)

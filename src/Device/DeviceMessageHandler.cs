@@ -63,7 +63,7 @@ public class DeviceMessageHandler : IHostedService
 
         _logger.LogInformation("Handling message: {message}", helloMessage);
 
-        await Task.Delay(TimeSpan.FromSeconds(3));
+        await Task.Delay(TimeSpan.FromSeconds(2));
 
         var responsePayload = @$"Acknowledged message <b>{helloMessage?.message}</b> at {DateTime.Now}. This is received from the device";
 
