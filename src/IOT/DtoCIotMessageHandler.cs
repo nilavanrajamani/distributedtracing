@@ -84,7 +84,7 @@ public class DtoCIotMessageHandler : IHostedService
         Baggage.Current = parentContext.Baggage;
 
         // start an activity
-        using (var activity = ActivitySource.StartActivity("message receive", ActivityKind.Consumer, parentContext.ActivityContext, tags: new[] { new KeyValuePair<string, object?>("server", Environment.MachineName) }))
+        using (var activity = ActivitySource.StartActivity("Device to Cloud", ActivityKind.Consumer, parentContext.ActivityContext, tags: new[] { new KeyValuePair<string, object?>("server", Environment.MachineName) }))
         {
 
             try
@@ -205,7 +205,7 @@ public class DtoCIotMessageHandler : IHostedService
 
     public async Task PublishAsync<T>(T message)
     {
-        using var activity = ActivitySource.StartActivity("message send", ActivityKind.Producer);
+        using var activity = ActivitySource.StartActivity("Device to Cloud", ActivityKind.Producer);
         var messageProperties = new MessageProperties();
 
         ActivityContext contextToInject = activity?.Context ?? Activity.Current?.Context ?? default;

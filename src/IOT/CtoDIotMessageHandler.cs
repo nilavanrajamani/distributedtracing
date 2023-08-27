@@ -95,7 +95,7 @@ public class CtoDIotMessageHandler : IHostedService
                 Baggage.Current = parentContext.Baggage;
 
                 // start an activity
-                using var activity = ActivitySource.StartActivity("message receive", ActivityKind.Consumer, parentContext.ActivityContext, tags: new[] { new KeyValuePair<string, object?>("server", Environment.MachineName) });
+                using var activity = ActivitySource.StartActivity("Cloud to Device", ActivityKind.Consumer, parentContext.ActivityContext, tags: new[] { new KeyValuePair<string, object?>("server", Environment.MachineName) });
 
                 AddMessagingTags(activity, receivedInfo);
 
@@ -218,7 +218,7 @@ public class CtoDIotMessageHandler : IHostedService
 
     public async Task PublishAsync<T>(T message)
     {
-        using var activity = ActivitySource.StartActivity("message send", ActivityKind.Producer);
+        using var activity = ActivitySource.StartActivity("Cloud to Device", ActivityKind.Producer);
         var messageProperties = new MessageProperties();
 
         ActivityContext contextToInject = activity?.Context ?? Activity.Current?.Context ?? default;
@@ -242,7 +242,7 @@ public class CtoDIotMessageHandler : IHostedService
     public async Task PublicMqttAsync(RequestPayload? message)
     {
 
-        using var activity = ActivitySource.StartActivity("message send", ActivityKind.Producer);
+        using var activity = ActivitySource.StartActivity("Cloud to Device", ActivityKind.Producer);
         var messageProperties = new MessagePropertiesMQTT();
 
         ActivityContext contextToInject = activity?.Context ?? Activity.Current?.Context ?? default;

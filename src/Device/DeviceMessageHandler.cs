@@ -55,7 +55,7 @@ public class DeviceMessageHandler : IHostedService
         Baggage.Current = parentContext.Baggage;
 
         // start an activity
-        using var activity = ActivitySource.StartActivity("message receive", ActivityKind.Consumer, parentContext.ActivityContext, tags: new[] { new KeyValuePair<string, object?>("server", Environment.MachineName) });
+        using var activity = ActivitySource.StartActivity("Cloud to Device", ActivityKind.Consumer, parentContext.ActivityContext, tags: new[] { new KeyValuePair<string, object?>("server", Environment.MachineName) });
 
         AddMessagingTagsMQTT(activity);
 
@@ -125,7 +125,7 @@ public class DeviceMessageHandler : IHostedService
 
     public async Task PublicMqttAsync(ResponsePayload? message)
     {        
-        using var activity = ActivitySource.StartActivity("message send", ActivityKind.Producer);
+        using var activity = ActivitySource.StartActivity("Device to Cloud", ActivityKind.Producer);
         var messageProperties = new MessagePropertiesMQTT();
 
         ActivityContext contextToInject = activity?.Context ?? Activity.Current?.Context ?? default;
