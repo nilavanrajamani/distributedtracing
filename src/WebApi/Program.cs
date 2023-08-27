@@ -69,7 +69,7 @@ app.MapGet("/send", async (string payload, MessagePublisher messagePublisher) =>
 {
     await messagePublisher.PublishAsync(new RequestPayload(payload));
     
-    return new ResponsePayload($"Message Sent. Awaiting response from device. Trace id is <b>{Activity.Current?.TraceId}<b/>");
+    return new ResponsePayload($"Message Sent. Awaiting response from device. Trace id is <b>{Activity.Current?.TraceId}</b>");
 });
 //using (var scope = app.Services.CreateScope())
 //{
