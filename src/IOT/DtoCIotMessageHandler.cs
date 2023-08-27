@@ -108,7 +108,7 @@ public class DtoCIotMessageHandler : IHostedService
             {
                 activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
                 activity?.RecordException(ex);
-                activity?.SetTag("messaging.destination_kind", "queue");
+                activity?.SetTag("otel.status_code", "ERROR");
             }
         }
     }
