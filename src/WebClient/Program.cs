@@ -1,3 +1,4 @@
+using Azure.Monitor.OpenTelemetry.AspNetCore;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
@@ -12,7 +13,12 @@ builder.Services.AddRazorPages();
 
 builder.Services.AddHttpClient();
 
-builder.Services.AddOpenTelemetryTracing(builder =>
+builder.Services.AddOpenTelemetry().UseAzureMonitor(options => {
+    options.ConnectionString = "InstrumentationKey=e1c310a6-654d-4265-9cc2-c30f9bd00311;IngestionEndpoint=https://southeastasia-1.in.applicationinsights.azure.com/;LiveEndpoint=https://southeastasia.livediagnostics.monitor.azure.com/";
+});
+
+//AddOpenTelemetryTracing(builder =>
+builder.Services.AddOpenTelemetry().WithTracing(builder =>
 {
     builder
         .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("WebClient"))
@@ -21,13 +27,10 @@ builder.Services.AddOpenTelemetryTracing(builder =>
             options => options.Filter = httpContext => !httpContext.Request.Path.Value?.Contains("/_framework/aspnetcore-browser-refresh.js") ?? true)
         .AddHttpClientInstrumentation(
             // we can hook into existing activities and customize them
-            options => options.Enrich = (activity, eventName, rawObject) =>
+            options => options.EnrichWithHttpRequestMessage = (activity, httpRequest) =>
             {
-                if(eventName == "OnStartActivity" && rawObject is System.Net.Http.HttpRequestMessage request && request.Method == HttpMethod.Get)
-                {
-                    activity.SetTag("RandomDemoTag", "Adding some random demo tag, just to see things working");
-                }
-            }
+                activity.SetTag("requestProtocol", httpRequest.Method);
+            }      
         )
         .AddZipkinExporter(options =>
         {
@@ -39,7 +42,8 @@ builder.Services.AddOpenTelemetryTracing(builder =>
             // not needed, it's the default
             //options.AgentHost = "localhost";
             //options.AgentPort = 6831;
-        });
+        })
+        ;
 });
 
 var app = builder.Build();

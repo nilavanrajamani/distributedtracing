@@ -4,13 +4,20 @@ using OpenTelemetry.Trace;
 using Device;
 using MQTTnet.Client;
 using MQTTnet;
+using Azure.Monitor.OpenTelemetry.AspNetCore;
 
 IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices(services =>
     {
         services.AddSingleton<IMqttClient>(_ => (new MqttFactory()).CreateMqttClient());
         services.AddLogging(builder => builder.AddSeq());
-        services.AddOpenTelemetryTracing(builder =>
+
+        services.AddOpenTelemetry()
+            .UseAzureMonitor(options => {
+            options.ConnectionString = "InstrumentationKey=e1c310a6-654d-4265-9cc2-c30f9bd00311;IngestionEndpoint=https://southeastasia-1.in.applicationinsights.azure.com/;LiveEndpoint=https://southeastasia.livediagnostics.monitor.azure.com/";
+        });
+
+        services.AddOpenTelemetry().WithTracing(builder =>
         {
             builder
                 .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("Device"))

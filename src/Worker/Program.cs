@@ -2,13 +2,22 @@ using EasyNetQ;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Gateway;
+using Azure.Monitor.OpenTelemetry.AspNetCore;
 
 IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices(services =>
     {
         services.AddSingleton<IBus>(_ => RabbitHutch.CreateBus("host=localhost;timeout=120"));
         services.AddLogging(builder => builder.AddSeq());
-        services.AddOpenTelemetryTracing(builder =>
+
+
+        services.AddOpenTelemetry()
+            .UseAzureMonitor(options => {
+            options.ConnectionString = "InstrumentationKey=e1c310a6-654d-4265-9cc2-c30f9bd00311;IngestionEndpoint=https://southeastasia-1.in.applicationinsights.azure.com/;LiveEndpoint=https://southeastasia.livediagnostics.monitor.azure.com/";
+        });
+
+
+        services.AddOpenTelemetry().WithTracing(builder =>
         {
             builder
                 .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("Gateway"))

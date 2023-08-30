@@ -7,6 +7,7 @@ using WebApi;
 using Microsoft.AspNetCore.SignalR;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
+using Azure.Monitor.OpenTelemetry.AspNetCore;
 
 // not needed, W3C is now default
 // System.Diagnostics.Activity.DefaultIdFormat = System.Diagnostics.ActivityIdFormat.W3C;
@@ -16,9 +17,16 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSignalR();
 builder.Services.AddLogging(builder => builder.AddSeq());
 builder.Services.AddControllers();
+
+
+builder.Services.AddOpenTelemetry()
+    .UseAzureMonitor(options => {
+    options.ConnectionString = "InstrumentationKey=e1c310a6-654d-4265-9cc2-c30f9bd00311;IngestionEndpoint=https://southeastasia-1.in.applicationinsights.azure.com/;LiveEndpoint=https://southeastasia.livediagnostics.monitor.azure.com/";
+});
+
 builder.Services.AddSingleton<IBus>(_ => RabbitHutch.CreateBus("host=localhost;timeout=120"));
 
-builder.Services.AddOpenTelemetryTracing(builder =>
+builder.Services.AddOpenTelemetry().WithTracing(builder =>
 {
     builder
         .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("WebApi"))
